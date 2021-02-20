@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ShuActivity</string>
+    <string name="data_error">数据异常</string>
+    <string name="mine">我的</string>
+    <string name="joke">笑话</string>
+    <string name="news">新闻</string>
+    <string name="Mall">商城</string>
+</resources>
