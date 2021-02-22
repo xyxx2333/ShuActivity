@@ -2,14 +2,20 @@ package com.example.shuactivity;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
@@ -21,6 +27,7 @@ import com.example.shuactivity.fragment.MineFragment;
 import com.example.shuactivity.fragment.NewsFragment;
 import com.example.shuactivity.fragment.ShopFragment;
 import com.example.shuactivity.receive.MyReceive;
+import com.example.shuactivity.service.MyService;
 import com.example.shuactivity.tools.HttpTools;
 import com.example.shuactivity.tools.JsonTool;
 
@@ -56,12 +63,32 @@ public class NewMainActivity extends BaseActivity {
     private NewsFragment newsFragment;
     private MyReceive mainReceive;
     public static String MAIN_BROADCAST = "com.shu.main_broadcast";  //广播名称
+    private ServiceConnection serviceConnection;
 
-
+    private MyService myService;
     @Override
     public void initView() {
         contentView(R.layout.new_main_activity_daluzy);
         ButterKnife.bind(this);
+
+        //启动Service
+        Intent intent = new Intent(this, MyService.class);
+        startService(intent);
+        serviceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Log.i("MyService>>", "连接成功：" + name);
+                MyService.MyBinder myBinder = (MyService.MyBinder) service;
+                myService = myBinder.getService();
+            }
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Log.i("MyService>>","断开连接");
+            }
+        };
+//        bindService(intent,serviceConnection,BIND_AUTO_CREATE);
+
+
         initData();
         setTitle("优惠券商城");
         radioGroup.check(R.id.first_radio);
@@ -110,7 +137,9 @@ public class NewMainActivity extends BaseActivity {
                         viewPager.setCurrentItem(0);
                         break;
                     case R.id.type_radio:
-
+                        Intent intent1 = new Intent(MyService.MYSERVICE_BC);
+                        intent1.putExtra("flag","myservice_bc");
+                        sendBroadcast(intent1);
                         viewPager.setCurrentItem(1);
                         break;
                     case R.id.shopping_car_radio:
@@ -157,5 +186,7 @@ public class NewMainActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mainReceive);        //注销
+        Intent intent = new Intent(NewMainActivity.this, MyService.class);
+        unbindService(serviceConnection);
     }
 }

@@ -65,6 +65,9 @@
             android:grantUriPermissions="true">
         </provider>
 
+        <service android:name=".service.MyService"
+            android:enabled="true"
+            android:exported="true"/>
     </application>
 
 </manifest>
